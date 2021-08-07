@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./jquery_3.3.2.min.js"></script>
+    <script src="./jquery.scannerdetection.js"></script>
+    <script src="./autocomplete/jquery-ui.js"></script>
+    <link rel="stylesheet" href="./autocomplete/jquery-ui.css">
+</head>
+<body>
+    <input type="text" id="scan"  readonly>
+    <input type="number" min="1" id="jumlah_hari" >
+
+    
+    <div>
+       <table>
+           <tbody>
+               <tr>
+                   <td>Nama Buku</td>
+                   <td>:</td>
+                   <td id="nama_buku"></td>
+               </tr>
+               <tr>
+                    <td>Penerbit</td>
+                    <td>:</td>
+                    <td id="penerbit"></td>
+                </tr>
+            
+           </tbody>
+       </table>
+
+    </div>
+
+
+    <h4>Angkatan</h4>
+    <select name="" onchange="getKelas()" id="angkatan" >
+        <option value="">Pilih Angkatan</option>
+    </select>
+
+
+    <h4>Kelas</h4>
+    <select name="" onchange="getSiswa()" id="kelas">
+        
+    </select>
+
+
+    
+    <h4>Siswa</h4>
+    <input type="text" id="ac">
+
+    <h4>Detail</h4>
+    <div>
+        Nama : <span id="detail_nama"></span>
+        
+        <button>Pinjam</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Buku</th>
+                    <th>Penerbit</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            </tbody>
+        </table>
+    </div>
+</body>
+
+<script>
+    var list_buku   = [];
+    // dokumen ketika sudah di load
+    $(document).ready(() => {
+        // selector by body 
+        $('body').scannerDetection({
+            onComplete:(no_isbn) => {
+                // cek apakah yang di scan itu udah masuk apa belum
+                $('#scan').val(no_isbn)
+                // cari buku ke server
+                cariBuku(no_isbn);
+                // array js
+            }
+        })
+
+        // get angkatan
+        getAngkatan();
+    })
+
+    function cariBuku(no_isbn){
+        $.ajax({
+            url:"./dummy.json",
+            method:"POST",
+            data:{
+                no_isbn:no_isbn
+            },
+            success:(data)=>{
+                for(let k of data){
+                   $('#nama_buku').text(k.nama_buku)
+                   $('#penerbit').html("<b>" + k.penerbit + "</b>")
+                }
+            },
+            error:(e) => {
+                console.log(e)
+            }
+        })
+    }
+
+    function getAngkatan() {
+        $.ajax({
+            url:"./angkatan.json",
+            success:(data) => {
+                for(let k of data){
+                   $('#angkatan').append("<option value='" + k.id_angkatan + "'>" + k.tahun_angkatan + "</option>")
+                }
+            },
+            error:(e) => {
+                console.log(e)
+                alert("Gagal Menyambung")
+            }
+        })
+    }
+
+    function getKelas(){
+        var id_angkatan = $('#angkatan').val();
+        $('#kelas').html("<option value=''>Pilih Kelas</option>");
+       if (id_angkatan =="") {
+           return;
+       }
+        $.ajax({
+            url:"./kelas.json",
+            data:{
+                id_angkatan:id_angkatan
+            },
+            success:(data) => {
+                for(let k of data){
+                   $('#kelas').append("<option value='" + k.id_kelas + "'>" + k.nama_kelas + "</option>")
+                }
+            },
+            error:(e) => {
+                console.log(e)
+                alert("Gagal Menyambung")
+            }
+        })
+    }
+
+    function getSiswa(){
+        var id_kelas = $('#kelas').val();
+        // SELECT id_siswa as id, nama_siswa as label, id_siswa as value FROM siswa WHERE id_kelas = '$id_kelas'
+       if (id_kelas =="") {
+           return;
+       }
+        $.ajax({
+            url:"./siswa.json",
+            data:{
+                id_kelas:id_kelas
+            },
+            success:(data) => {
+                $( "#ac" ).autocomplete({
+                    source: data,
+                    select: function( event, ui ) {
+                        $('#detail_nama').text(ui.item.label)
+                        initTable(ui.item.id)
+                    }
+                });
+            },
+            error:(e) => {
+                console.log(e)
+                alert("Gagal Menyambung")
+            }
+        })
+    }
+
+    function initTable(id_siswa){
+        // url get id_siswa
+        // "<?= base_url ?>siswa/getsiswa?id_siswa=" + id_siswa
+
+    }
+</script>
+</html>

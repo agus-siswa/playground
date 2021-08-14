@@ -1,0 +1,4 @@
+SELECT pinjaman.id_pinjaman,siswa.nama_siswa, COUNT(pinjaman.id_pinjaman) as Jumlah_buku 
+FROM 'pinjaman' INNER JOIN siswa 
+ON pinjaman.id_siswa = siswa.id_siswa
+GROUP BY siswa.id_siswa

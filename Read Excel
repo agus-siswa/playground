@@ -4,9 +4,33 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Reader\IReader;
 
+
+$target_dir = "../../uploads/";
+
+$nama_file  = $_FILES["upload_file"]["name"];
+$target_file = $target_dir . basename($nama_file);
+
+
+$imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+
+if ($imageFileType != "xlsx") {
+    echo "File Harus Berformat Excel.";
+    exit();
+}
+
+
+if ($_FILES["upload_file"]["size"] > 500000) {
+    echo "File Anda Terlalu Besar.";
+    exit();
+
+  }
+  
+$new_file = $target_dir.time().".".$imageFileType;
+$uploaded = move_uploaded_file($_FILES["upload_file"]["tmp_name"], $new_file);
+
 $reader      = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
 $reader->setReadDataOnly(true);
-$spreadsheet = $reader->load("hello_world.xlsx");
+$spreadsheet = $reader->load($new_file);
 $worksheet 				= $spreadsheet->getActiveSheet();
 
 
@@ -31,5 +55,16 @@ $worksheet 				= $spreadsheet->getActiveSheet();
         $hasil[]    = $hasil_baris;
 
     }
- //   (\"".$h['isbn']."\",\"".$h['isbn']."\",\"".$h['isbn']."\",\"".$h['isbn']."\",\"".$h['isbn']."\")"
+    
+    foreach ($hasil as $h) {
+        
+        $query  = "INSERT INTO buku (isbn,judul,pengarang,penerbit,tahun,jumlah,lokasi) VALUE 
+        (\"".$h['isbn']."\",\"".$h['isbn']."\",\"".$h['isbn']."\",\"".$h['isbn']."\",\"".$h['isbn']."\")";
+        echo $query."<br/>";
+    }
+    
+    unlink($new_file);
+    
+    echo "Import Buku Berhasil";
+
     

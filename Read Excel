@@ -1,0 +1,34 @@
+<?php 
+require '../../vendor/autoload.php';  
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Reader\IReader;
+
+$reader      = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+$reader->setReadDataOnly(true);
+$spreadsheet = $reader->load("hello_world.xlsx");
+$worksheet 				= $spreadsheet->getActiveSheet();
+
+
+    // Hitung Baris number
+    $highestRow 			= $worksheet->getHighestRow();
+    // Highest Colom Alpabhet string
+    $highestColumn 			= $worksheet->getHighestColumn();
+   	// Highest index colom number
+    $highestColumnIndex 	= \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn); 
+    $kolom_str                  = array("id_buku","isbn","judul","pengarang","penerbit","tahun","jumlah","lokasi");
+    // array output
+    $hasil                  = array();
+    for ($baris=1; $baris <= $highestRow ; $baris++) { 
+        if ($baris == 1) {
+            continue;
+        }
+        $hasil_baris    = array();
+        // baris
+        for($kolom=1;$kolom <= $highestColumnIndex; $kolom++){
+            $hasil_baris[$kolom_str[$kolom-1]] = $worksheet->getCellByColumnAndRow($kolom, $baris)->getFormattedValue();
+        }
+        $hasil[]    = $hasil_baris;
+
+    }
+    
